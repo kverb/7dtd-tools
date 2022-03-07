@@ -18,7 +18,10 @@ func (hh InfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	port := query.Get("port")
 	filter := query.Get("filter")
 	hostPort := host + ":" + port
-	respMap := parser.QueryServer(hostPort)
+	respMap, err := parser.QueryServer(hostPort)
+	if err != nil {
+		respMap = map[string]string{"error": err.Error()}
+	}
 
 	if len(filter) > 0 {
 		v, ok := respMap[filter]
