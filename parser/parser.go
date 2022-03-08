@@ -4,8 +4,19 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 )
+
+// this parses the "CurrentServerTime" param into a Day, Hour string
+// the server time is a number based on "ticks", where there are
+// 24,000 ticks per day. So a time value of 14500 means it's 14:50 on the first day
+func ParseGameTime(currentServerTime string) string {
+	t, _ := strconv.Atoi(currentServerTime)
+	day := int(t / 24000)
+	hour := int(t % 24000 / 1000)
+	return fmt.Sprintf("Day %d Hour %d", day, hour)
+}
 
 func Parse(resp string) map[string]string {
 
@@ -19,6 +30,10 @@ func Parse(resp string) map[string]string {
 			v = splitToken[1]
 		}
 		serverInfo[k] = v
+	}
+	time, ok := serverInfo["CurrentServerTime"]
+	if ok {
+		serverInfo["DayHour"] = ParseGameTime(time)
 	}
 	return serverInfo
 }
