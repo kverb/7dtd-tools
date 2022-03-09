@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // this parses the "CurrentServerTime" param into a Day, Hour string
@@ -41,7 +42,7 @@ func Parse(resp string) map[string]string {
 // addr should be a host:port combined string
 func QueryServer(addr string) (map[string]string, error) {
 	var nilMap map[string]string
-	conn, err := net.DialTimeout("tcp", addr, 8e9) // 8 secs or 8B nanoseconds
+	conn, err := net.DialTimeout("tcp", addr, 8*time.Second)
 	if err != nil {
 		fmt.Print(err.Error())
 		return nilMap, err
