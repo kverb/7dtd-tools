@@ -2,12 +2,16 @@ package parser
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// TODO: make this a well-definied struct
+type QueryResp map[string]string
 
 // this parses the "CurrentServerTime" param into a Day, Hour string
 // the server time is a number based on "ticks", where there are
@@ -19,7 +23,7 @@ func ParseGameTime(currentServerTime string) string {
 	return fmt.Sprintf("Day %d Hour %d", day, hour)
 }
 
-func Parse(resp string) map[string]string {
+func Parse(resp string) QueryResp {
 
 	serverInfo := map[string]string{}
 	tokens := strings.Split(resp, ";")
@@ -40,7 +44,7 @@ func Parse(resp string) map[string]string {
 }
 
 // addr should be a host:port combined string
-func QueryServer(addr string) (map[string]string, error) {
+func QueryServer(addr string) (QueryResp, error) {
 	var nilMap map[string]string
 	conn, err := net.DialTimeout("tcp", addr, 8*time.Second)
 	if err != nil {
@@ -53,7 +57,26 @@ func QueryServer(addr string) (map[string]string, error) {
 		fmt.Print(err.Error())
 		return nilMap, err
 	}
-	fmt.Print(resp)
+	fmt.Print(resp, "\n")
 	respMap := Parse(resp)
 	return respMap, nil
+}
+
+func QueryServerBytes(addr string, filter string) ([]byte, error) {
+	respMap, err := QueryServer(addr)
+	if err != nil {
+		respMap = map[string]string{"error": err.Error()}
+	}
+	if len(filter) > -1 {
+		v, ok := respMap[filter]
+		if ok {
+			respMap = map[string]string{filter: v}
+		}
+	}
+	b, err := json.MarshalIndent(respMap, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+		b = []byte(err.Error())
+	}
+	return b, err
 }
