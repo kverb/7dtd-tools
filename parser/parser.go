@@ -18,7 +18,7 @@ type QueryResp map[string]string
 // 24,000 ticks per day. So a time value of 14500 means it's 14:50 on the first day
 func ParseGameTime(currentServerTime string) string {
 	t, _ := strconv.Atoi(currentServerTime)
-	day := int(t / 24000)
+	day := int(t / 24000) + 1
 	hour := int(t % 24000 / 1000)
 	return fmt.Sprintf("Day %d Hour %d", day, hour)
 }
